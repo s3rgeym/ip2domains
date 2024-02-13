@@ -1,6 +1,10 @@
 # ip2domains
 
-Scans IP addresses and finds domains
+Scans IP addresses and finds domains. Domain names are extracted from certificates.
+
+Services such as 2IP often contain outdated information:
+
+![image](https://github.com/s3rgeym/ip2domains/assets/12753171/d0f5728c-c9ff-480f-b830-13595b386c06)
 
 Installation:
 

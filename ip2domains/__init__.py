@@ -88,7 +88,7 @@ def parse_args(
         "-a",
         "--addr",
         nargs="+",
-        help="ip, ip-range or cidr",
+        help="IP address, range START_IP-END_IP or CIDR",
         default=[],
     )
     parser.add_argument(
@@ -111,13 +111,13 @@ def parse_args(
         dest="workers_num",
         type=int,
         default=50,
-        help="number of workers",
+        help="maximum number of worker threads",
     )
     parser.add_argument(
         "-t",
         "--timeout",
-        type=float,
-        default=5.0,
+        type=int,
+        default=2,
         help="timeout in seconds",
     )
     parser.add_argument(
@@ -165,10 +165,11 @@ def extract_cert_domains(
         domains.append(common_name)
     # https://en.wikipedia.org/wiki/Subject_Alternative_Name
     domains.extend(
-        v for k, v in cert_dict.get("subjectAltName", []) if k.upper() == "DNS"
+        v for k, v in cert_dict.get("subjectAltName", []) if k == "DNS"
     )
-    if valid_domains := set(filter(DOMAIN_NAME_RE.fullmatch, domains)):
-        result_queue.put({"ip": ip, "domains": list(valid_domains)})
+    domains = set(filter(DOMAIN_NAME_RE.fullmatch, domains))
+    if domains:
+        result_queue.put({"ip": ip, "domains": list(domains)})
 
 
 def get_networks(
@@ -238,7 +239,7 @@ def main(argv: Sequence[str] | None = None) -> int | None:
         finally:
             fut.cancel()
 
-    result_queue.put(None)
+    result_queue.put_nowait(None)
     output_thread.join()
 
     logging.info("Finished!")  # MGIMO

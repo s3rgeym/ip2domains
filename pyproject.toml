@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "ip2domains"
-version = "0.1.0"
+version = "0.1.1"
 description = "Scans IP addresses and finds domains"
 authors = ["Sergey M"]
 readme = "README.md"
+repository = "https://github.com/s3rgeym/ip2domains"
 
 [tool.poetry.dependencies]
 python = "^3.11"

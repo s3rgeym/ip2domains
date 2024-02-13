@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ip2domains"
-version = "0.1.1"
+version = "0.1.2"
 description = "Scans IP addresses and finds domains"
 authors = ["Sergey M"]
 readme = "README.md"

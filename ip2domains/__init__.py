@@ -155,7 +155,7 @@ def extract_cert_domains(
     ip: str,
     timeout: float,
     result_queue: Queue,
-) -> set[str]:
+) -> None:
     if not (cert_dict := fetch_cert_info(ip, timeout)):
         return
     logging.debug("SSL cert found at %s: %r", ip, cert_dict)

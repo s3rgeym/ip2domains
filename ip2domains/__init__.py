@@ -44,8 +44,10 @@ BANNER = r"""
   |_|
 """
 
+# A TLD's maximum length is 63 characters, although most are around 2–3. The full list of TLDs is maintained by ICANN. The labels are what follow
 DOMAIN_NAME_RE = re.compile(
-    r"(\*\.)?([-a-z0-9]+\.)+(?!(local(domain|host)?|default)?$)[a-z]{2,8}", re.I
+    r"(\*\.)?([-a-z0-9]+\.)+(?!(local(domain|host)?|default)?$)[a-z]{2,63}",
+    re.I,
 )
 
 print_err = partial(print, file=sys.stderr)
@@ -72,9 +74,10 @@ class NameSpace(argparse.Namespace):
     output: typing.TextIO
     addresses: list[str]
     workers_num: int
-    timeout: float
+    timeout: int
     verbosity: int
     banner: bool
+    help: bool
 
 
 def parse_args(
@@ -83,20 +86,21 @@ def parse_args(
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        add_help=False,
     )
     parser.add_argument(
         "-a",
         "--addr",
-        nargs="+",
-        help="IP address, range START_IP-END_IP or CIDR",
-        default=[],
+        dest="addresses",
+        nargs="*",
+        help="IP address, IP range (STARTIP-ENDIP) or CIDR",
     )
     parser.add_argument(
         "-i",
         "--input",
         type=argparse.FileType(),
         default="-",
-        help="input file containing list of ip addresses each on a new line",
+        help="input file containing list of IP addresses each on a new line",
     )
     parser.add_argument(
         "-o",
@@ -133,6 +137,7 @@ def parse_args(
         default=0,
         help="be more verbose",
     )
+    parser.add_argument("-h", "--help", action="store_true", help="show help")
     return parser, parser.parse_args(argv, NameSpace())
 
 
@@ -153,12 +158,13 @@ def fetch_cert_info(ip: str, timeout: float) -> dict:
 
 def extract_cert_domains(
     ip: str,
-    timeout: float,
+    timeout: int,
     result_queue: Queue,
 ) -> None:
+    logging.debug("check %s", ip)
     if not (cert_dict := fetch_cert_info(ip, timeout)):
         return
-    logging.debug("SSL cert found at %s: %r", ip, cert_dict)
+    logging.info("SSL cert found at %s: %r", ip, cert_dict)
     subject = dict(x[0] for x in cert_dict.get("subject", []))
     domains = []
     if common_name := subject.get("commonName"):
@@ -200,21 +206,30 @@ def write_output(output: typing.TextIO, result_queue: Queue) -> None:
             result_queue.task_done()
 
 
-def main(argv: Sequence[str] | None = None) -> int | None:
-    _, args = parse_args(argv)
+def main(argv: Sequence[str] | None = None) -> None:
+    parser, args = parse_args(argv)
 
     if args.banner:
         print_err(BANNER)
 
+    if args.help or (not args.addresses and args.input.isatty()):
+        parser.print_help(sys.stderr)
+        parser.exit(2)
+
     log_level = max(
         logging.DEBUG, logging.WARNING - args.verbosity * logging.DEBUG
     )
+
     logging.basicConfig(level=log_level, handlers=[ColorHandler()])
 
-    addresses = args.addr.copy()
+    addresses = list(args.addresses or [])
 
     if not args.input.isatty():
         addresses.extend(filter(None, map(str.strip, args.input)))
+
+    if not addresses:
+        parser.print_help()
+        parser.exit(1)
 
     # logging.debug(addresses)
     result_queue = Queue()
@@ -227,7 +242,8 @@ def main(argv: Sequence[str] | None = None) -> int | None:
         futs = [
             pool.submit(extract_cert_domains, ip, args.timeout, result_queue)
             for ip in map(
-                str, itertools.chain.from_iterable(get_networks(addresses))
+                str,
+                itertools.chain.from_iterable(get_networks(addresses)),
             )
         ]
 
@@ -242,8 +258,4 @@ def main(argv: Sequence[str] | None = None) -> int | None:
     result_queue.put_nowait(None)
     output_thread.join()
 
-    logging.info("Finished!")  # MGIMO
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+    logging.info("Finished ")  # MGIMO

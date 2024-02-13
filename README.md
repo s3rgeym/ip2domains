@@ -18,9 +18,17 @@ Usage:
 # help
 $ ip2domains -h
 
-# scan domains
-$ echo 0.0.0.0/0 | ip2domains --no-banner
+# Scan domains
+# KLM is sucks. Don't use these f*gots. Give me back my money, assholes!
+$ echo 171.21.120.0/22 | ip2domains --no-banner
 
-# list unique domains
-$ echo 0.0.0.0/0 | ip2domains --no-banner | jq -r '.domains[]' | sort | uniq
+# List unique domains
+$ echo 171.21.120.0/22 | ip2domains --no-banner | jq -r '.domains[]' | sort | uniq
+
+# Remember that not all domains listed in the certificate actually use this IP
+$ dig +short af-klm.com
+171.21.122.81
+
+$ dig +short bluebiz.com
+52.166.78.97
 ```

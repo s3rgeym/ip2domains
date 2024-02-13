@@ -117,7 +117,7 @@ def parse_args(
         "-t",
         "--timeout",
         type=float,
-        default=1.0,
+        default=5.0,
         help="timeout in seconds",
     )
     parser.add_argument(

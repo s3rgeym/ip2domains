@@ -1,6 +1,6 @@
 # ip2domains
 
-Scans IP addresses and finds domains. Domain names are extracted from certificates.
+Scans IP addresses and finds domains. Domain names are extracted from SSL certificates.
 
 Services such as 2IP often contain outdated information:
 

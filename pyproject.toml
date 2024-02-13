@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "ip2domains"
+version = "0.1.0"
+description = "Scans IP addresses and finds domains"
+authors = ["Sergey M"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+ip2domains = 'ip2domains:main'

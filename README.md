@@ -1,6 +1,14 @@
 # ip2domains
 
-Scans IP addresses and finds domains. Domain names are extracted from SSL certificates. This method does not guarantee 100% finding of all domains. You can also use the method of obtaining a domain name through a reverse DNS lookup, but 99% of domains do not contain a PTR record.
+Scans IP addresses and finds domains. Domain names are extracted from SSL certificates. This method does not guarantee 100% finding of all domains. You can also use the method of obtaining a domain name through a reverse DNS lookup, but 99% of domains do not contain a PTR record:
+
+```bash
+$ dig +short example.com
+93.184.216.34
+# NO PTR
+$ php -r 'echo(gethostbyaddr("'$(dig +short example.com)'"));'
+93.184.216.34
+```
 
 The reason for developing this tool was that many Internet services provide unreliable results:
 

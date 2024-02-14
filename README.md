@@ -7,7 +7,7 @@ $ dig +short example.com
 93.184.216.34
 # NO PTR
 $ php -r 'echo(gethostbyaddr("'$(dig +short example.com)'"));'
-93.184.216.34
+93.184.216.34  # <-- fail: if successful there should be example.com
 ```
 
 The reason for developing this tool was that many Internet services provide unreliable results:
